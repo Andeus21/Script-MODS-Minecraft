@@ -1,65 +1,37 @@
+# ====================================================================
+# ESCÁNER FORENSE V5 - ANDEUS TOXIC (DISEÑO NUEVO) + APIs
+# ====================================================================
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Clear-Host
-Write-Host "   _              _                    " -ForegroundColor Cyan
-Write-Host "  / \   _ __   __| | ___ _   _ ___    " -ForegroundColor Cyan
-Write-Host " / _ \ | '_ \ / _` |/ _ \ | | / __|   " -ForegroundColor Cyan
-Write-Host "/ ___ \| | | | (_| |  __/ |_| \__ \_  " -ForegroundColor Cyan
-Write-Host "/_/   \_\_| |_|\__,_|\___|\__,_|___(_)" -ForegroundColor Cyan
-Write-Host "                                       "
-Write-Host "                 _                     " -ForegroundColor Green
-Write-Host "               _(_)_                   " -ForegroundColor Green
-Write-Host "              (_)@(_)                  " -ForegroundColor Green
-Write-Host "               /   \                   " -ForegroundColor Green
-Write-Host "             _ \_ _/ _                 " -ForegroundColor Green
-Write-Host "            (_)     (_)                " -ForegroundColor Green
-Write-Host "                                       "
-Write-Host "_____________________________________________________" -ForegroundColor DarkGray
+
+$Banner = @"
+ █████╗ ███╗   ██╗██████╗ ███████╗██╗   ██╗███████╗
+██╔══██╗████╗  ██║██╔══██╗██╔════╝██║   ██║██╔════╝
+███████║██╔██╗ ██║██║  ██║█████╗  ██║   ██║███████╗
+██╔══██║██║╚██╗██║██║  ██║██╔══╝  ██║   ██║╚════██║
+██║  ██║██║ ╚████║██████╔╝███████╗╚██████╔╝███████║
+╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝                                 
+                                  
+                ☣︎ INFECTION ☣︎                     
+"@
+
+Write-Host $Banner -ForegroundColor Green
+Write-Host "_____________________________________________________" -ForegroundColor DarkGreen
 Write-Host ""
+
 $modsPath = "$env:APPDATA\.minecraft\mods"
-
-# --- BASE DE DATOS DE FIRMAS (La Lista Negra de Leo) ---
-
-$Clientes = @(
-    "fapcraft", "doomsday", "asteria", "prestige", "xenon", 
-    "argon", "hellion", "grim client", "virgin", "donut", 
-    "dev.krypton", "dev.gambleclient", 
-    # Nuevos agregados:
-    "raven", "bplus", "keystrokesmod",  # Firmas de Raven B+
-    "liquidbounce", "net.ccbluex",      # Firmas de LiquidBounce
-    "meteor client", "meteorclient",    # Meteor
-    "wurst", "kamiblue", "impact client"
-)
-
-$ModulosIlegales = @(
-    "aimassist", "autocrystal", "triggerbot", "shieldbreaker",
-    "antiknockback", "flight", "autototem", "blockesp", 
-    "packspoof", "cheststeal", "autoclicker",
-    # Los que pidió tu mánager y descubrimientos forenses:
-    "xray", "advanced xray",            # El X-Ray que descubriste
-    "attack through grass", "attackthroughgrass",
-    "inventory profiles next", "inventoryprofilesnext",
-    "freecam", "accurate block placement", "accurateblockplacement",
-    "marlow crystal", "marlowcrystal",
-    "macro", "reach"
-)
-
-$PatronesOcultos = @(
-    "org.chainlibs", "keyboardmixin", "clientplayerinteractionmanagermixin",
-    "phantom-refmap.json", "xyz.greaj", "jnativehook"
-)
-
-# --------------------------------------------------------------------
-
-Clear-Host
-Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host " 🕵️‍♂️ ESCÁNER FORENSE V3: DETECCIÓN AVANZADA " -ForegroundColor Cyan
-Write-Host "======================================================" -ForegroundColor Cyan
 
 if (-not (Test-Path $modsPath)) {
     Write-Host "[!] La carpeta mods no existe en la ruta por defecto." -ForegroundColor Red
     $modsPath = Read-Host "Ingresa la ruta completa de la carpeta a escanear"
 }
-
 Write-Host "Escaneando directorio: $modsPath`n" -ForegroundColor Yellow
+
+# --- BASES DE DATOS INTERNAS ---
+$Clientes = @("fapcraft", "doomsday", "asteria", "prestige", "xenon", "argon", "hellion", "grim client", "virgin", "donut", "dev.krypton", "dev.gambleclient", "raven", "bplus", "keystrokesmod", "liquidbounce", "net.ccbluex", "meteor client", "meteorclient", "wurst", "kamiblue", "impact client")
+$ModulosIlegales = @("aimassist", "autocrystal", "triggerbot", "shieldbreaker", "antiknockback", "flight", "autototem", "blockesp", "packspoof", "cheststeal", "autoclicker", "xray", "advanced xray", "attack through grass", "attackthroughgrass", "inventory profiles next", "inventoryprofilesnext", "freecam", "accurate block placement", "accurateblockplacement", "marlow crystal", "marlowcrystal", "macro", "reach")
+$PatronesOcultos = @("org.chainlibs", "keyboardmixin", "clientplayerinteractionmanagermixin", "phantom-refmap.json", "xyz.greaj", "jnativehook", "licensecheckmixin", "imgui", "imgui.gl3", "sub_classes")
 
 $archivos = Get-ChildItem -Path $modsPath -File
 $hacksEncontrados = 0
@@ -68,41 +40,52 @@ foreach ($archivo in $archivos) {
     Write-Host "Analizando: [$($archivo.Name)]" -ForegroundColor Gray
     
     try {
-        $contenido = [System.IO.File]::ReadAllText($archivo.FullName, [System.Text.Encoding]::ASCII).ToLower()
-        $esHack = $false
+        $hash = (Get-FileHash $archivo.FullName -Algorithm SHA1).Hash.ToLower()
+        Write-Host "   [ID]: $hash" -ForegroundColor DarkGray
+        $esVerificado = $false
 
-        foreach ($firma in $Clientes) {
-            if ($contenido -match $firma) {
-                Write-Host "   [!] CLIENTE FANTASMA DETECTADO: $firma" -ForegroundColor Red
-                $esHack = $true
+        try {
+            $modrinthUrl = "https://api.modrinth.com/v2/version_file/$hash"
+            $respModrinth = Invoke-RestMethod -Uri $modrinthUrl -Method Get -ErrorAction Stop
+            Write-Host "   >> VEREDICTO: ✅ SEGURO (Validado por Modrinth API)" -ForegroundColor Cyan
+            $esVerificado = $true
+        } catch {
+            try {
+                $megabaseUrl = "https://megabase.vercel.app/api/query?hash=$hash"
+                $respMegabase = Invoke-RestMethod -Uri $megabaseUrl -Method Get -ErrorAction Stop
+                if ($respMegabase -and $respMegabase.name) {
+                    Write-Host "   >> VEREDICTO: ✅ SEGURO (Validado por Megabase API)" -ForegroundColor Cyan
+                    $esVerificado = $true
+                }
+            } catch { }
+        }
+
+        if (-not $esVerificado) {
+            Write-Host "   [i] Archivo Desconocido en la nube. Escaneando código fuente..." -ForegroundColor DarkYellow
+            $contenido = [System.IO.File]::ReadAllText($archivo.FullName, [System.Text.Encoding]::ASCII).ToLower()
+            $esHack = $false
+            $motivo = ""
+
+            if ($contenido -match "jnativehook" -and $archivo.Name -match "voicechat") {
+                Write-Host "   [i] Excepción aplicada: Mod de VoiceChat detectado." -ForegroundColor DarkCyan
+            } else {
+                foreach ($firma in $Clientes) { if ($contenido -match $firma) { $esHack = $true; $motivo += "Cliente:$firma " } }
+                foreach ($modulo in $ModulosIlegales) { if ($contenido -match $modulo) { $esHack = $true; $motivo += "Módulo:$modulo " } }
+                foreach ($patron in $PatronesOcultos) { if ($contenido -match $patron) { $esHack = $true; $motivo += "Mixin:$patron " } }
+            }
+
+            if ($esHack) {
+                $hacksEncontrados++
+                Write-Host "   >> VEREDICTO: ❌ HACK DETECTADO ($motivo)" -ForegroundColor Red
+            } else {
+                Write-Host "   >> VEREDICTO: ⚠️ MODIFICADO / DESCONOCIDO (Revisar manual)" -ForegroundColor Yellow
             }
         }
-
-        foreach ($modulo in $ModulosIlegales) {
-            if ($contenido -match $modulo) {
-                Write-Host "   [!] MÓDULO ILEGAL DETECTADO: $modulo" -ForegroundColor Magenta
-                $esHack = $true
-            }
-        }
-
-        foreach ($patron in $PatronesOcultos) {
-            if ($contenido -match $patron) {
-                Write-Host "   [!] CÓDIGO SOSPECHOSO (MIXIN): $patron" -ForegroundColor DarkRed
-                $esHack = $true
-            }
-        }
-
-        if ($esHack) {
-            $hacksEncontrados++
-            Write-Host "   >> VEREDICTO: ARCHIVO ILEGAL / HACK `n" -ForegroundColor Red
-        } else {
-            Write-Host "   >> VEREDICTO: LIMPIO `n" -ForegroundColor Green
-        }
-
-    } catch {
-        Write-Host "   >> ERROR AL LEER `n" -ForegroundColor DarkYellow
+    } catch { 
+        Write-Host "   >> ERROR AL LEER ARCHIVO (Posible bloqueo de Windows)" -ForegroundColor Red 
     }
+    Write-Host ""
 }
 
-Write-Host "======================================================" -ForegroundColor Cyan
+Write-Host "======================================================" -ForegroundColor DarkGreen
 Write-Host "Resumen: Se encontraron $hacksEncontrados archivos ilegales." -ForegroundColor Yellow
