@@ -1,0 +1,96 @@
+# ====================================================================
+# ESCÁNER FORENSE DE MODS V3 - BLACKLIST ACTUALIZADA (POR LEO)
+# ====================================================================
+
+$modsPath = "$env:APPDATA\.minecraft\mods"
+
+# --- BASE DE DATOS DE FIRMAS (La Lista Negra de Leo) ---
+
+$Clientes = @(
+    "fapcraft", "doomsday", "asteria", "prestige", "xenon", 
+    "argon", "hellion", "grim client", "virgin", "donut", 
+    "dev.krypton", "dev.gambleclient", 
+    # Nuevos agregados:
+    "raven", "bplus", "keystrokesmod",  # Firmas de Raven B+
+    "liquidbounce", "net.ccbluex",      # Firmas de LiquidBounce
+    "meteor client", "meteorclient",    # Meteor
+    "wurst", "kamiblue", "impact client"
+)
+
+$ModulosIlegales = @(
+    "aimassist", "autocrystal", "triggerbot", "shieldbreaker",
+    "antiknockback", "flight", "autototem", "blockesp", 
+    "packspoof", "cheststeal", "autoclicker",
+    # Los que pidió tu mánager y descubrimientos forenses:
+    "xray", "advanced xray",            # El X-Ray que descubriste
+    "attack through grass", "attackthroughgrass",
+    "inventory profiles next", "inventoryprofilesnext",
+    "freecam", "accurate block placement", "accurateblockplacement",
+    "marlow crystal", "marlowcrystal",
+    "macro", "reach"
+)
+
+$PatronesOcultos = @(
+    "org.chainlibs", "keyboardmixin", "clientplayerinteractionmanagermixin",
+    "phantom-refmap.json", "xyz.greaj", "jnativehook"
+)
+
+# --------------------------------------------------------------------
+
+Clear-Host
+Write-Host "======================================================" -ForegroundColor Cyan
+Write-Host " 🕵️‍♂️ ESCÁNER FORENSE V3: DETECCIÓN AVANZADA " -ForegroundColor Cyan
+Write-Host "======================================================" -ForegroundColor Cyan
+
+if (-not (Test-Path $modsPath)) {
+    Write-Host "[!] La carpeta mods no existe en la ruta por defecto." -ForegroundColor Red
+    $modsPath = Read-Host "Ingresa la ruta completa de la carpeta a escanear"
+}
+
+Write-Host "Escaneando directorio: $modsPath`n" -ForegroundColor Yellow
+
+$archivos = Get-ChildItem -Path $modsPath -File
+$hacksEncontrados = 0
+
+foreach ($archivo in $archivos) {
+    Write-Host "Analizando: [$($archivo.Name)]" -ForegroundColor Gray
+    
+    try {
+        $contenido = [System.IO.File]::ReadAllText($archivo.FullName, [System.Text.Encoding]::ASCII).ToLower()
+        $esHack = $false
+
+        foreach ($firma in $Clientes) {
+            if ($contenido -match $firma) {
+                Write-Host "   [!] CLIENTE FANTASMA DETECTADO: $firma" -ForegroundColor Red
+                $esHack = $true
+            }
+        }
+
+        foreach ($modulo in $ModulosIlegales) {
+            if ($contenido -match $modulo) {
+                Write-Host "   [!] MÓDULO ILEGAL DETECTADO: $modulo" -ForegroundColor Magenta
+                $esHack = $true
+            }
+        }
+
+        foreach ($patron in $PatronesOcultos) {
+            if ($contenido -match $patron) {
+                Write-Host "   [!] CÓDIGO SOSPECHOSO (MIXIN): $patron" -ForegroundColor DarkRed
+                $esHack = $true
+            }
+        }
+
+        if ($esHack) {
+            $hacksEncontrados++
+            Write-Host "   >> VEREDICTO: ARCHIVO ILEGAL / HACK `n" -ForegroundColor Red
+        } else {
+            Write-Host "   >> VEREDICTO: LIMPIO `n" -ForegroundColor Green
+        }
+
+    } catch {
+        Write-Host "   >> ERROR AL LEER `n" -ForegroundColor DarkYellow
+    }
+}
+
+Write-Host "======================================================" -ForegroundColor Cyan
+Write-Host "Resumen: Se encontraron $hacksEncontrados archivos ilegales." -ForegroundColor Yellow
