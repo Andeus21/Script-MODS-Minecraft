@@ -1,5 +1,5 @@
 # ====================================================================
-# ESCÁNER FORENSE DE MODS V3 - BLACKLIST ACTUALIZADA (POR LEO)
+# ESCÁNER FORENSE DE MODS V3 - BLACKLIST ACTUALIZADA
 # ====================================================================
 
 $modsPath = "$env:APPDATA\.minecraft\mods"
