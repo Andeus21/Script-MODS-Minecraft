@@ -1,7 +1,15 @@
-# ====================================================================
-# ESCÁNER FORENSE DE MODS V3 - BLACKLIST ACTUALIZADA
-# ====================================================================
-
+Clear-Host
+Write-Host "   _              _                    " -ForegroundColor Cyan
+Write-Host "  / \   _ __   __| | ___ _   _ ___    " -ForegroundColor Cyan
+Write-Host " / _ \ | '_ \ / _` |/ _ \ | | / __|   " -ForegroundColor Cyan
+Write-Host "/ ___ \| | | | (_| |  __/ |_| \__ \_  " -ForegroundColor Cyan
+Write-Host "/_/   \_\_| |_|\__,_|\___|\__,_|___(_)" -ForegroundColor Cyan
+Write-Host "                                       "
+Write-Host "       /\_/\    ☣️  FORENSIC SCANNER V3 ☣️" -ForegroundColor Magenta
+Write-Host "      ( o.o )   Creado por Leo          " -ForegroundColor Magenta
+Write-Host "       > ^ <    Buscando mods ilegales..." -ForegroundColor Magenta
+Write-Host "_____________________________________________________" -ForegroundColor DarkGray
+Write-Host ""
 $modsPath = "$env:APPDATA\.minecraft\mods"
 
 # --- BASE DE DATOS DE FIRMAS (La Lista Negra de Leo) ---
