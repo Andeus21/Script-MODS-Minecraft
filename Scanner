@@ -16,7 +16,7 @@ $Banner = @"
   ▀▄▀▄▀▄▀▄▀▄▀▄  ☣︎ INFECTION ☣︎  ▀▄▀▄▀▄▀▄▀▄▀▄▀                   
 "@
 
-Write-Host $Banner -ForegroundColor Green
+Write-Host $Banner -ForegroundColor Red
 Write-Host "_____________________________________________________" -ForegroundColor DarkGreen
 Write-Host ""
 
